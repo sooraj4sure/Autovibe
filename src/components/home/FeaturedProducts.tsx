@@ -1,0 +1,60 @@
+import { Product } from "@/types";
+import ProductCard from "@/components/products/ProductCard";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
+async function getFeaturedProducts(): Promise<Product[]> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/products?featured=true&limit=4`,
+      { next: { revalidate: 300 } }
+    );
+    const data = await res.json();
+    return data.success ? data.data : [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function FeaturedProducts() {
+  const products = await getFeaturedProducts();
+
+  if (!products.length) return null;
+
+  return (
+    <section className="py-24 bg-obsidian-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+          <div>
+            <div className="flex items-center gap-4 mb-3">
+              <span className="w-10 h-px bg-gold" />
+              <span className="text-gold text-[10px] font-sans tracking-[0.35em] uppercase">
+                Handpicked Selection
+              </span>
+            </div>
+            <h2 className="font-display text-4xl sm:text-5xl text-ivory">
+              Featured
+              <br />
+              <span className="text-gold italic">Pieces</span>
+            </h2>
+          </div>
+          <Link
+            href="/store/products?featured=true"
+            className="text-ash text-[11px] font-sans tracking-[0.2em] uppercase hover:text-gold transition-colors flex items-center gap-2 group self-start sm:self-auto"
+          >
+            View All
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {products.map((product, i) => (
+            <ProductCard key={product._id} product={product} index={i} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
