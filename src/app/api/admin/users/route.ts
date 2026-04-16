@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import Order from "@/models/Order";
 import { isAdminAuthenticated } from "@/lib/auth";
-
+export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     const admin = isAdminAuthenticated(req);

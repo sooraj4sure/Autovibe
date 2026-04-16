@@ -4,7 +4,7 @@ import Order from "@/models/Order";
 import Product from "@/models/Product";
 import User from "@/models/User";
 import { isAdminAuthenticated } from "@/lib/auth";
-
+export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     const admin = isAdminAuthenticated(req);

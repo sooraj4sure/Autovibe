@@ -6,10 +6,11 @@ import { X, Eye, EyeOff, User, Mail, Lock, Phone, Loader2 } from "lucide-react";
 import { useUserAuth } from "@/context/UserAuthContext";
 import toast from "react-hot-toast";
 
-interface AuthModalProps {
+type AuthModalProps = {
   isOpen: boolean;
   onClose: () => void;
-}
+  defaultTab?: "login" | "register"; // --------------------
+};
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { login, register } = useUserAuth();

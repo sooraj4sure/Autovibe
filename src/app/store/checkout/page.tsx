@@ -12,7 +12,7 @@ import { clearCart } from "@/lib/store/cartSlice";
 import { formatPrice } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import toast from "react-hot-toast";
-
+import { useEffect } from "react";
 interface CheckoutForm {
   fullName: string;
   email: string;
@@ -119,7 +119,7 @@ export default function CheckoutPage() {
 
       if (data.success) {
         dispatch(clearCart());
-        router.push(`/store/order-success?orderId=${data.data.orderId}`);
+        router.push(`/store/order-success?orderId=${data.data._id}`);
       }
     } catch (err) {
       console.error(err);
@@ -131,10 +131,13 @@ export default function CheckoutPage() {
     }
   };
 
+useEffect(() => {
   if (items.length === 0) {
     router.push("/store/cart");
-    return null;
   }
+}, [items, router]);
+
+if (items.length === 0) return null;
 
   return (
     <div className="min-h-screen bg-obsidian pt-28 pb-20">
