@@ -266,7 +266,7 @@ export default function ProductsClient({ initialFilters = {} }: ProductsClientPr
 
         {/* Products grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {Array(12).fill(null).map((_, i) => (
               <ProductCardSkeleton key={i} />
             ))}
@@ -280,7 +280,7 @@ export default function ProductsClient({ initialFilters = {} }: ProductsClientPr
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {products.map((product, i) => (
               <ProductCard key={product._id} product={product} index={i} />
             ))}
