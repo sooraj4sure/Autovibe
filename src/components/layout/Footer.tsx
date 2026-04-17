@@ -42,7 +42,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-4">
               {[
-                { Icon: Instagram, href: "#" },
+                { Icon: Instagram, href: "https://www.instagram.com/autovibe_car.accessories?igsh=OHp1ZnFzZjFuMXRx" },
                 { Icon: Twitter, href: "#" },
                 { Icon: Youtube, href: "#" },
               ].map(({ Icon, href }, i) => (
