@@ -46,16 +46,16 @@ export function generateOrderId(): string {
  */
 export function calculateCartTotals(
   subtotal: number,
-  freeShippingThreshold = 5000
+  freeShippingThreshold = 500
 ): {
   subtotal: number;
   tax: number;
   shipping: number;
   total: number;
 } {
-  const tax = Math.round(subtotal * 0.18); // 18% GST
-  const shipping = subtotal >= freeShippingThreshold ? 0 : 299;
-  const total = subtotal + tax + shipping;
+  const tax = Math.round(subtotal - subtotal / 1.18); // Extract GST already included in price
+  const shipping = subtotal >= freeShippingThreshold ? 0 : 99;
+  const total = subtotal + shipping; // No extra tax added
 
   return { subtotal, tax, shipping, total };
 }

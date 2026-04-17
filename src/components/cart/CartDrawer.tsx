@@ -6,13 +6,20 @@ import Link from "next/link";
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppSelector, useAppDispatch } from "@/hooks/useStore";
-import { closeCart, removeFromCart, updateQuantity } from "@/lib/store/cartSlice";
+import {
+  closeCart,
+  removeFromCart,
+  updateQuantity,
+} from "@/lib/store/cartSlice";
 import { formatPrice } from "@/lib/utils";
 import Button from "@/components/ui/Button";
+import { tree } from "next/dist/build/templates/app-page";
 
 export default function CartDrawer() {
   const dispatch = useAppDispatch();
-  const { items, subtotal, tax, shipping, total, isOpen } = useAppSelector((s) => s.cart);
+  const { items, subtotal, tax, shipping, total, isOpen } = useAppSelector(
+    (s) => s.cart,
+  );
 
   return (
     <AnimatePresence>
@@ -64,9 +71,14 @@ export default function CartDrawer() {
                     animate={{ opacity: 1 }}
                     className="flex flex-col items-center justify-center h-64 gap-4"
                   >
-                    <ShoppingBag className="w-12 h-12 text-graphite-soft" strokeWidth={1} />
-                    <p className="text-ash font-body text-lg">Your cart is empty</p>
-                    
+                    <ShoppingBag
+                      className="w-12 h-12 text-graphite-soft"
+                      strokeWidth={1}
+                    />
+                    <p className="text-ash font-body text-lg">
+                      Your cart is empty
+                    </p>
+
                     {/* <p className="text-graphite-soft text-[11px] font-sans tracking-wider uppercase">
                       Discover our collection
                     </p> */}
@@ -95,7 +107,10 @@ export default function CartDrawer() {
                     >
                       <div className="relative w-16 h-16 flex-shrink-0 rounded-sm overflow-hidden bg-obsidian">
                         <Image
-                          src={item.product.images[0]?.url || "/placeholder-product.jpg"}
+                          src={
+                            item.product.images[0]?.url ||
+                            "/placeholder-product.jpg"
+                          }
                           alt={item.product.name}
                           fill
                           className="object-cover"
@@ -123,7 +138,7 @@ export default function CartDrawer() {
                                   updateQuantity({
                                     productId: item.product._id,
                                     quantity: item.quantity - 1,
-                                  })
+                                  }),
                                 )
                               }
                               className="w-6 h-6 flex items-center justify-center text-ash hover:text-ivory hover:bg-white/5 transition-colors"
@@ -139,7 +154,7 @@ export default function CartDrawer() {
                                   updateQuantity({
                                     productId: item.product._id,
                                     quantity: item.quantity + 1,
-                                  })
+                                  }),
                                 )
                               }
                               disabled={item.quantity >= item.product.stock}
@@ -150,7 +165,9 @@ export default function CartDrawer() {
                           </div>
 
                           <button
-                            onClick={() => dispatch(removeFromCart(item.product._id))}
+                            onClick={() =>
+                              dispatch(removeFromCart(item.product._id))
+                            }
                             className="text-ash hover:text-red-400 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -169,13 +186,34 @@ export default function CartDrawer() {
                 <div className="space-y-1.5">
                   {[
                     { label: "Subtotal", value: subtotal },
-                    { label: "GST (18%)", value: tax },
-                    { label: "Shipping", value: shipping, isFree: shipping === 0 },
-                  ].map(({ label, value, isFree }) => (
-                    <div key={label} className="flex justify-between text-xs font-sans">
-                      <span className="text-ash tracking-wider uppercase">{label}</span>
-                      <span className={isFree ? "text-green-400" : "text-smoke"}>
-                        {isFree ? "Free" : formatPrice(value)}
+                    { label: "GST (18% incl.)", value: tax, isGst: true },
+                    {
+                      label: "Shipping",
+                      value: shipping,
+                      isFree: shipping === 0,
+                    },
+                  ].map(({ label, value, isFree, isGst }) => (
+                    <div
+                      key={label}
+                      className="flex justify-between text-xs font-sans"
+                    >
+                      <span className="text-ash tracking-wider uppercase">
+                        {label}
+                      </span>
+                      <span
+                        className={
+                          isFree
+                            ? "text-green-400"
+                            : isGst
+                              ? "text-ash"
+                              : "text-smoke"
+                        }
+                      >
+                        {isFree
+                          ? "Free"
+                          : isGst
+                            ? `${formatPrice(value)} incl.`
+                            : formatPrice(value)}
                       </span>
                     </div>
                   ))}
@@ -195,11 +233,19 @@ export default function CartDrawer() {
                     href="/store/checkout"
                     onClick={() => dispatch(closeCart())}
                   >
-                    <Button variant="gold" size="md" className="w-full" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                    <Button
+                      variant="gold"
+                      size="md"
+                      className="w-full"
+                      rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                    >
                       Proceed to Checkout
                     </Button>
                   </Link>
-                  <Link href="/store/cart" onClick={() => dispatch(closeCart())}>
+                  <Link
+                    href="/store/cart"
+                    onClick={() => dispatch(closeCart())}
+                  >
                     <Button variant="ghost" size="sm" className="w-full">
                       View Full Cart
                     </Button>
@@ -207,7 +253,7 @@ export default function CartDrawer() {
                 </div>
 
                 <p className="text-graphite-soft text-[9px] font-sans tracking-widest uppercase text-center">
-                  Free shipping on orders above ₹5,000
+                  Free shipping on orders above ₹500
                 </p>
               </div>
             )}

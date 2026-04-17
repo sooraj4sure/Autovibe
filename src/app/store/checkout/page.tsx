@@ -83,30 +83,82 @@ export default function CheckoutPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async () => {
-    const required: (keyof CheckoutForm)[] = ["fullName", "email", "phone", "addressLine1", "city", "state", "pincode"];
-    const missing = required.filter((f) => !form[f].trim());
-    if (missing.length) {
-      toast.error("Please fill all required fields", {
-        style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
-      });
-      return;
-    }
-    if (items.length === 0) {
-      toast.error("Your cart is empty");
-      return;
-    }
+  // const handleSubmit = async () => {
+  //   const required: (keyof CheckoutForm)[] = ["fullName", "email", "phone", "addressLine1", "city", "state", "pincode"];
+  //   const missing = required.filter((f) => !form[f].trim());
+  //   if (missing.length) {
+  //     toast.error("Please fill all required fields", {
+  //       style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
+  //     });
+  //     return;
+  //   }
+  //   if (items.length === 0) {
+  //     toast.error("Your cart is empty");
+  //     return;
+  //   }
 
+  //   setIsSubmitting(true);
+  //   try {
+  //     const orderItems = items.map((item) => ({
+  //       product: item.product._id,
+  //       name: item.product.name,
+  //       price: item.product.price,
+  //       quantity: item.quantity,
+  //       image: item.product.images[0]?.url || "",
+  //     }));
+
+  //     const { data } = await axios.post("/api/orders", {
+  //       items: orderItems,
+  //       shippingAddress: form,
+  //       paymentMethod,
+  //       subtotal,
+  //       tax,
+  //       shipping,
+  //       total,
+  //     });
+
+  //     if (data.success) {
+  //       dispatch(clearCart());
+  //       router.push(`/store/order-success?orderId=${data.data._id}`);
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Failed to place order. Please try again.", {
+  //       style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
+  //     });
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
+
+
+  const handleSubmit = async () => {
+  const required: (keyof CheckoutForm)[] = ["fullName", "email", "phone", "addressLine1", "city", "state", "pincode"];
+  const missing = required.filter((f) => !form[f].trim());
+  if (missing.length) {
+    toast.error("Please fill all required fields", {
+      style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
+    });
+    return;
+  }
+  if (items.length === 0) {
+    toast.error("Your cart is empty");
+    return;
+  }
+
+  const orderItems = items.map((item) => ({
+    product: item.product._id,
+    name: item.product.name,
+    price: item.product.price,
+    quantity: item.quantity,
+    image: item.product.images[0]?.url || "",
+  }));
+
+  // ── COD flow ──────────────────────────────────────────
+  if (paymentMethod === "COD") {
     setIsSubmitting(true);
     try {
-      const orderItems = items.map((item) => ({
-        product: item.product._id,
-        name: item.product.name,
-        price: item.product.price,
-        quantity: item.quantity,
-        image: item.product.images[0]?.url || "",
-      }));
-
       const { data } = await axios.post("/api/orders", {
         items: orderItems,
         shippingAddress: form,
@@ -116,7 +168,6 @@ export default function CheckoutPage() {
         shipping,
         total,
       });
-
       if (data.success) {
         dispatch(clearCart());
         router.push(`/store/order-success?orderId=${data.data._id}`);
@@ -129,7 +180,76 @@ export default function CheckoutPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+    return;
+  }
+
+  // ── Prepaid / Razorpay flow ───────────────────────────
+  setIsSubmitting(true);
+  try {
+    const { data: rzpData } = await axios.post("/api/razorpay/create-order", { total });
+    if (!rzpData.success) throw new Error("Failed to create payment");
+
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: rzpData.order.amount,
+      currency: "INR",
+      name: "AutoVibe",
+      description: "Premium Car Accessories",
+      order_id: rzpData.order.id,
+      prefill: {
+        name: form.fullName,
+        email: form.email,
+        contact: form.phone,
+      },
+      theme: { color: "#C9A14A" },
+      handler: async (response: {
+        razorpay_payment_id: string;
+        razorpay_order_id: string;
+        razorpay_signature: string;
+      }) => {
+        try {
+          const { data } = await axios.post("/api/orders", {
+            items: orderItems,
+            shippingAddress: form,
+            paymentMethod: "Prepaid",
+            subtotal,
+            tax,
+            shipping,
+            total,
+            paymentStatus: "Paid",
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id,
+          });
+          if (data.success) {
+            dispatch(clearCart());
+            router.push(`/store/order-success?orderId=${data.data._id}`);
+          }
+        } catch {
+          toast.error("Payment done but order saving failed. Contact support.");
+        }
+      },
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rzp = new (window as any).Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to initiate payment. Please try again.", {
+      style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
+
+
+
+
+
+
 
 useEffect(() => {
   if (items.length === 0) {
@@ -269,7 +389,8 @@ if (items.length === 0) return null;
               <div className="space-y-2 border-t border-white/5 pt-4 mb-5">
                 {[
                   { label: "Subtotal", value: formatPrice(subtotal) },
-                  { label: "GST (18%)", value: formatPrice(tax) },
+                  // { label: "GST (18%)", value: formatPrice(tax) },
+                  { label: "GST (18% incl.)", value: `${formatPrice(tax)} included`, green: false },
                   { label: "Shipping", value: shipping === 0 ? "Free" : formatPrice(shipping), green: shipping === 0 },
                 ].map(({ label, value, green }) => (
                   <div key={label} className="flex justify-between text-[11px] font-sans">

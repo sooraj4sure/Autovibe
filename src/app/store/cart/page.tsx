@@ -134,7 +134,8 @@ export default function CartPage() {
               <div className="space-y-3 mb-6">
                 {[
                   { label: "Subtotal", value: formatPrice(subtotal) },
-                  { label: "GST (18%)", value: formatPrice(tax) },
+                  // { label: "GST (18%)", value: formatPrice(tax) },
+                  { label: "GST (18% incl.)", value: `${formatPrice(tax)} included`, green: false },
                   { label: "Shipping", value: shipping === 0 ? "Free" : formatPrice(shipping), green: shipping === 0 },
                 ].map(({ label, value, green }) => (
                   <div key={label} className="flex justify-between text-sm font-sans">
@@ -160,7 +161,7 @@ export default function CartPage() {
 
               {shipping > 0 && (
                 <p className="text-center text-[10px] font-sans text-ash mt-3">
-                  Add <span className="text-gold">{formatPrice(5000 - subtotal)}</span> more for free shipping
+                  Add <span className="text-gold">{formatPrice(500 - subtotal)}</span> more for free shipping
                 </p>
               )}
             </div>
