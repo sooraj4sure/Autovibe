@@ -46,7 +46,7 @@ export function generateOrderId(): string {
  */
 export function calculateCartTotals(
   subtotal: number,
-  freeShippingThreshold = 500
+  freeShippingThreshold = 399
 ): {
   subtotal: number;
   tax: number;

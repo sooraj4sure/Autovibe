@@ -257,8 +257,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/5">
               {[
-                { Icon: Truck, label: "Free Delivery", sub: "Orders above ₹5,000" },
-                { Icon: RotateCcw, label: "Easy Returns", sub: "7-day return policy" },
+                { Icon: Truck, label: "Free Delivery", sub: "Orders above ₹399" },
+                { Icon: RotateCcw, label: "Easy Returns", sub: "within 24 hours of delivery" },
                 { Icon: Shield, label: "Authentic", sub: "100% genuine products" },
               ].map(({ Icon, label, sub }) => (
                 <div key={label} className="flex flex-col items-center text-center gap-1.5 p-3 bg-graphite rounded-sm border border-white/5">

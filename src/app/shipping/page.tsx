@@ -27,7 +27,7 @@ export default function ShippingPage() {
             {
               icon: Truck,
               title: "Free Shipping",
-              desc: "Enjoy free shipping on all orders above ₹500. Orders below ₹500 carry a flat ₹99 shipping charge.",
+              desc: "Enjoy free shipping on all orders above ₹399. Orders below ₹399 carry a flat ₹99 shipping charge.",
             },
             {
               icon: Clock,

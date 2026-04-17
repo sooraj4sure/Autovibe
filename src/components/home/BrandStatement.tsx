@@ -73,9 +73,10 @@ export default function BrandStatement() {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="flex flex-wrap items-center justify-center gap-8 mt-16 pt-8 border-t border-white/5"
+          className="flex flex-wrap items-center justify-center gap-4 mt-16 pt-8 border-t border-white/5"
         >
           {[
+            { icon: "📦", label: "Cash on Delivery" },
             { icon: "🛡️", label: "Authentic Materials" },
             { icon: "🚚", label: "Pan-India Shipping" },
             { icon: "↩️", label: "Easy Returns" },
