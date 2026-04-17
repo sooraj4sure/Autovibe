@@ -105,9 +105,9 @@ export default function Footer() {
             </h4>
             <ul className="space-y-4">
               {[
-                { Icon: Mail, text: "hello@Autovive.in" },
-                { Icon: Phone, text: "+91 98765 43210" },
-                { Icon: MapPin, text: "CP, Delhi, India" },
+                { Icon: Mail, text: "caraccessoriesautovibe@gmail.com" },
+                { Icon: Phone, text: "+91 9220749166" },
+                { Icon: MapPin, text: "Kashmere Gate, Delhi, India" },
               ].map(({ Icon, text }, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <Icon className="w-3.5 h-3.5 text-gold mt-0.5 flex-shrink-0" strokeWidth={1.5} />
@@ -130,7 +130,7 @@ export default function Footer() {
               <span className="w-1 h-1 rounded-full bg-gold/30" />
               <span>Crafted for Excellence</span>
               <span className="w-1 h-1 rounded-full bg-gold/30" />
-              <span>Free Shipping Above ₹5,000</span>
+              <span>Free Shipping Above ₹500</span>
               <span className="w-1 h-1 rounded-full bg-gold/30" />
             </span>
           ))}

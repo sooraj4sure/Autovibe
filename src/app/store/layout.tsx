@@ -26,7 +26,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
 
       {/* WhatsApp Floating Button */}
       <a 
-        href="https://wa.me/919582539166?text=Hey%20I%20want%20to%20buy%20some%20products !"
+        href="https://wa.me/919220749166?text=Hey%20I%20want%20to%20buy%20some%20products !"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-transform duration-200"
