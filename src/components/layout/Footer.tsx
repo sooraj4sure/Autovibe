@@ -130,7 +130,7 @@ export default function Footer() {
               <span className="w-1 h-1 rounded-full bg-gold/30" />
               <span>Crafted for Excellence</span>
               <span className="w-1 h-1 rounded-full bg-gold/30" />
-              <span>Free Shipping Above ₹500</span>
+              <span>Free Shipping Above ₹399</span>
               <span className="w-1 h-1 rounded-full bg-gold/30" />
             </span>
           ))}
