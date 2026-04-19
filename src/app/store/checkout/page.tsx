@@ -1,7 +1,6 @@
-
 // "use client";
 
-// import { useState } from "react";
+// import { useState, useRef, useEffect } from "react";
 // import { useRouter } from "next/navigation";
 // import Image from "next/image";
 // import { motion } from "framer-motion";
@@ -12,7 +11,8 @@
 // import { formatPrice } from "@/lib/utils";
 // import Button from "@/components/ui/Button";
 // import toast from "react-hot-toast";
-// import { useEffect } from "react";
+// import { useUserAuth } from "@/context/UserAuthContext";
+
 // interface CheckoutForm {
 //   fullName: string;
 //   email: string;
@@ -34,16 +34,8 @@
 //   "Delhi", "Jammu & Kashmir", "Ladakh",
 // ];
 
-// // ✅ Moved outside CheckoutPage to prevent remount on every render
 // const InputField = ({
-//   label,
-//   field,
-//   type = "text",
-//   required = true,
-//   placeholder = "",
-//   half = false,
-//   form,
-//   updateForm,
+//   label, field, type = "text", required = true, placeholder = "", half = false, form, updateForm,
 // }: {
 //   label: string;
 //   field: keyof CheckoutForm;
@@ -74,6 +66,10 @@
 //   const { items, subtotal, tax, shipping, total } = useAppSelector((s) => s.cart);
 //   const [paymentMethod, setPaymentMethod] = useState<"COD" | "Prepaid">("COD");
 //   const [isSubmitting, setIsSubmitting] = useState(false);
+
+//   // ✅ Flag to prevent useEffect from redirecting to cart after order success
+//   const orderPlaced = useRef(false);
+
 //   const [form, setForm] = useState<CheckoutForm>({
 //     fullName: "", email: "", phone: "", addressLine1: "", addressLine2: "",
 //     city: "", state: "", pincode: "", country: "India",
@@ -83,123 +79,144 @@
 //     setForm((prev) => ({ ...prev, [field]: value }));
 //   };
 
-//   const handleSubmit = async () => {
-//   const required: (keyof CheckoutForm)[] = ["fullName", "email", "phone", "addressLine1", "city", "state", "pincode"];
-//   const missing = required.filter((f) => !form[f].trim());
-//   if (missing.length) {
-//     toast.error("Please fill all required fields", {
-//       style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
+//   // ✅ Only redirect to cart if cart is empty AND order hasn't just been placed
+//   const { user, isLoading: authLoading } = useUserAuth();
+// useEffect(() => {
+//   if (items.length === 0 && !orderPlaced.current) {
+//     router.push("/store/cart");
+//   }
+//   if (!authLoading && !user) {
+//     toast.error("Please login or register to place an order", {
+//       style: {
+//         background: "#1E1E1E",
+//         color: "#EDD99A",
+//         border: "1px solid rgba(201,161,74,0.2)",
+//       },
 //     });
-//     return;
+//     router.push("/store");
 //   }
-//   if (items.length === 0) {
-//     toast.error("Your cart is empty");
-//     return;
-//   }
+// }, [items, router, user, authLoading]);
 
-//   const orderItems = items.map((item) => ({
-//     product: item.product._id,
-//     name: item.product.name,
-//     price: item.product.price,
-//     quantity: item.quantity,
-//     image: item.product.images[0]?.url || "",
-//   }));
+//   // ✅ Guard render — but only if order hasn't been placed
+//   if (items.length === 0 && !orderPlaced.current) return null;
 
-//   // ── COD flow ──────────────────────────────────────────
-//   if (paymentMethod === "COD") {
+//   const handleSubmit = async () => {
+//     const required: (keyof CheckoutForm)[] = ["fullName", "email", "phone", "addressLine1", "city", "state", "pincode"];
+//     const missing = required.filter((f) => !form[f].trim());
+//     if (missing.length) {
+//       toast.error("Please fill all required fields", {
+//         style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
+//       });
+//       return;
+//     }
+//     if (items.length === 0) {
+//       toast.error("Your cart is empty");
+//       return;
+//     }
+
+//     const orderItems = items.map((item) => ({
+//       product: item.product._id,
+//       name: item.product.name,
+//       price: item.product.price,
+//       quantity: item.quantity,
+//       image: item.product.images[0]?.url || "",
+//     }));
+
+//     // ── COD flow ──────────────────────────────────────────
+//     if (paymentMethod === "COD") {
+//       setIsSubmitting(true);
+//       try {
+//         const { data } = await axios.post("/api/orders", {
+//           items: orderItems,
+//           shippingAddress: form,
+//           paymentMethod,
+//           subtotal,
+//           tax,
+//           shipping,
+//           total,
+//         });
+//         if (data.success) {
+//           orderPlaced.current = true;   // ✅ Set flag BEFORE clearing cart
+//           dispatch(clearCart());
+//           router.push(`/store/order-success?orderId=${data.data._id}`);
+//         }
+//       } catch (err) {
+//         console.error(err);
+//         toast.error("Failed to place order. Please try again.", {
+//           style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
+//         });
+//       } finally {
+//         setIsSubmitting(false);
+//       }
+//       return;
+//     }
+
+//     // ── Prepaid / Razorpay flow ───────────────────────────
 //     setIsSubmitting(true);
 //     try {
-//       const { data } = await axios.post("/api/orders", {
-//         items: orderItems,
-//         shippingAddress: form,
-//         paymentMethod,
-//         subtotal,
-//         tax,
-//         shipping,
-//         total,
-//       });
-//       if (data.success) {
-//         dispatch(clearCart());
-//         router.push(`/store/order-success?orderId=${data.data._id}`);
-//       }
+//       const { data: rzpData } = await axios.post("/api/razorpay/create-order", { total });
+//       if (!rzpData.success) throw new Error("Failed to create payment");
+
+//       const options = {
+//         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+//         amount: rzpData.order.amount,
+//         currency: "INR",
+//         name: "AutoVibe",
+//         description: "Premium Car Accessories",
+//         order_id: rzpData.order.id,
+//         prefill: {
+//           name: form.fullName,
+//           email: form.email,
+//           contact: form.phone,
+//         },
+//         theme: { color: "#C9A14A" },
+//         handler: async (response: {
+//           razorpay_payment_id: string;
+//           razorpay_order_id: string;
+//           razorpay_signature: string;
+//         }) => {
+//           try {
+//             const { data } = await axios.post("/api/orders", {
+//               items: orderItems,
+//               shippingAddress: form,
+//               paymentMethod: "Prepaid",
+//               subtotal,
+//               tax,
+//               shipping,
+//               total,
+//               paymentStatus: "Paid",
+//               razorpayPaymentId: response.razorpay_payment_id,
+//               razorpayOrderId: response.razorpay_order_id,
+//             });
+//             if (data.success) {
+//               orderPlaced.current = true;   // ✅ Set flag BEFORE clearing cart
+//               dispatch(clearCart());
+//               router.push(`/store/order-success?orderId=${data.data._id}`);
+//             }
+//           } catch {
+//             toast.error("Payment done but order saving failed. Contact support.");
+//           }
+//         },
+//         modal: {
+//           ondismiss: () => {
+//             // User closed Razorpay popup — do NOT clear cart
+//             setIsSubmitting(false);
+//           },
+//         },
+//       };
+
+//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//       const rzp = new (window as any).Razorpay(options);
+//       rzp.open();
 //     } catch (err) {
 //       console.error(err);
-//       toast.error("Failed to place order. Please try again.", {
+//       toast.error("Failed to initiate payment. Please try again.", {
 //         style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
 //       });
 //     } finally {
 //       setIsSubmitting(false);
 //     }
-//     return;
-//   }
-
-//   // ── Prepaid / Razorpay flow ───────────────────────────
-//   setIsSubmitting(true);
-//   try {
-//     const { data: rzpData } = await axios.post("/api/razorpay/create-order", { total });
-//     if (!rzpData.success) throw new Error("Failed to create payment");
-
-//     const options = {
-//       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-//       amount: rzpData.order.amount,
-//       currency: "INR",
-//       name: "AutoVibe",
-//       description: "Premium Car Accessories",
-//       order_id: rzpData.order.id,
-//       prefill: {
-//         name: form.fullName,
-//         email: form.email,
-//         contact: form.phone,
-//       },
-//       theme: { color: "#C9A14A" },
-//       handler: async (response: {
-//         razorpay_payment_id: string;
-//         razorpay_order_id: string;
-//         razorpay_signature: string;
-//       }) => {
-//         try {
-//           const { data } = await axios.post("/api/orders", {
-//             items: orderItems,
-//             shippingAddress: form,
-//             paymentMethod: "Prepaid",
-//             subtotal,
-//             tax,
-//             shipping,
-//             total,
-//             paymentStatus: "Paid",
-//             razorpayPaymentId: response.razorpay_payment_id,
-//             razorpayOrderId: response.razorpay_order_id,
-//           });
-//           if (data.success) {
-//             dispatch(clearCart());
-//             router.push(`/store/order-success?orderId=${data.data._id}`);
-//           }
-//         } catch {
-//           toast.error("Payment done but order saving failed. Contact support.");
-//         }
-//       },
-//     };
-
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//     const rzp = new (window as any).Razorpay(options);
-//     rzp.open();
-//   } catch (err) {
-//     console.error(err);
-//     toast.error("Failed to initiate payment. Please try again.", {
-//       style: { background: "#1E1E1E", color: "#EDD99A", border: "1px solid rgba(201,161,74,0.2)" },
-//     });
-//   } finally {
-//     setIsSubmitting(false);
-//   }
-// };
-
-// useEffect(() => {
-//   if (items.length === 0) {
-//     router.push("/store/cart");
-//   }
-// }, [items, router]);
-
-// if (items.length === 0) return null;
+//   };
 
 //   return (
 //     <div className="min-h-screen bg-obsidian pt-28 pb-20">
@@ -300,12 +317,11 @@
 //             </motion.div>
 //           </div>
 
-//           {/* Order summary */}
+//           {/* Order Summary */}
 //           <div className="lg:col-span-1">
 //             <div className="bg-graphite border border-white/5 rounded-sm p-6 sticky top-28">
 //               <h2 className="font-display text-xl text-ivory mb-5">Order Summary</h2>
 
-//               {/* Items */}
 //               <div className="space-y-3 mb-5 max-h-60 overflow-y-auto no-scrollbar">
 //                 {items.map((item) => (
 //                   <div key={item.product._id} className="flex gap-3">
@@ -331,7 +347,6 @@
 //               <div className="space-y-2 border-t border-white/5 pt-4 mb-5">
 //                 {[
 //                   { label: "Subtotal", value: formatPrice(subtotal) },
-//                   // { label: "GST (18%)", value: formatPrice(tax) },
 //                   { label: "GST (18% incl.)", value: `${formatPrice(tax)} included`, green: false },
 //                   { label: "Shipping", value: shipping === 0 ? "Free" : formatPrice(shipping), green: shipping === 0 },
 //                 ].map(({ label, value, green }) => (
@@ -382,6 +397,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Truck, CreditCard, Banknote, Lock, ChevronRight } from "lucide-react";
 import axios from "axios";
@@ -390,6 +406,8 @@ import { clearCart } from "@/lib/store/cartSlice";
 import { formatPrice } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import toast from "react-hot-toast";
+import { useUserAuth } from "@/context/UserAuthContext";
+import AuthModal from "@/components/ui/AuthModal";
 
 interface CheckoutForm {
   fullName: string;
@@ -442,10 +460,12 @@ export default function CheckoutPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { items, subtotal, tax, shipping, total } = useAppSelector((s) => s.cart);
+  const { user, isLoading: authLoading } = useUserAuth();
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "Prepaid">("COD");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authTab, setAuthTab] = useState<"login" | "register">("login");
 
-  // ✅ Flag to prevent useEffect from redirecting to cart after order success
   const orderPlaced = useRef(false);
 
   const [form, setForm] = useState<CheckoutForm>({
@@ -457,14 +477,65 @@ export default function CheckoutPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // ✅ Only redirect to cart if cart is empty AND order hasn't just been placed
   useEffect(() => {
     if (items.length === 0 && !orderPlaced.current) {
       router.push("/store/cart");
     }
   }, [items, router]);
 
-  // ✅ Guard render — but only if order hasn't been placed
+  // ── Login gate ─────────────────────────────────────────
+  if (!authLoading && !user) {
+    return (
+      <div className="min-h-screen bg-obsidian flex items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-graphite border border-white/5 rounded-sm p-10 max-w-md w-full text-center"
+        >
+          {/* Lock icon */}
+          <div className="w-16 h-16 border border-gold/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-7 h-7 text-gold" strokeWidth={1.5} />
+          </div>
+
+          <h2 className="font-display text-3xl text-ivory mb-3">
+            Login Required
+          </h2>
+          <p className="text-ash font-body text-base mb-8 leading-relaxed">
+            You need to be logged in to place an order. Please sign in or
+            create an account to continue.
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => { setAuthTab("login"); setAuthModalOpen(true); }}
+              className="w-full bg-gold text-obsidian py-3 text-[11px] font-sans font-semibold tracking-[0.2em] uppercase hover:bg-gold-light transition-all rounded-sm"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => { setAuthTab("register"); setAuthModalOpen(true); }}
+              className="w-full border border-gold/40 text-gold py-3 text-[11px] font-sans font-semibold tracking-[0.2em] uppercase hover:bg-gold/10 transition-all rounded-sm"
+            >
+              Create Account
+            </button>
+            <Link href="/store">
+              <button className="w-full border border-white/10 text-ash py-3 text-[11px] font-sans tracking-[0.2em] uppercase hover:border-gold/30 hover:text-ivory transition-all rounded-sm">
+                Back to Home
+              </button>
+            </Link>
+          </div>
+        </motion.div>
+
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+          defaultTab={authTab}
+        />
+      </div>
+    );
+  }
+
   if (items.length === 0 && !orderPlaced.current) return null;
 
   const handleSubmit = async () => {
@@ -503,7 +574,7 @@ export default function CheckoutPage() {
           total,
         });
         if (data.success) {
-          orderPlaced.current = true;   // ✅ Set flag BEFORE clearing cart
+          orderPlaced.current = true;
           dispatch(clearCart());
           router.push(`/store/order-success?orderId=${data.data._id}`);
         }
@@ -556,7 +627,7 @@ export default function CheckoutPage() {
               razorpayOrderId: response.razorpay_order_id,
             });
             if (data.success) {
-              orderPlaced.current = true;   // ✅ Set flag BEFORE clearing cart
+              orderPlaced.current = true;
               dispatch(clearCart());
               router.push(`/store/order-success?orderId=${data.data._id}`);
             }
@@ -566,7 +637,6 @@ export default function CheckoutPage() {
         },
         modal: {
           ondismiss: () => {
-            // User closed Razorpay popup — do NOT clear cart
             setIsSubmitting(false);
           },
         },
