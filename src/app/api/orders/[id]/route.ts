@@ -77,6 +77,26 @@ import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
 import { isAdminAuthenticated, getUserFromRequest } from "@/lib/auth";
 
+
+// delete Route 
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectDB();
+    const deleted = await Order.findByIdAndDelete(params.id);
+    if (!deleted) {
+      return NextResponse.json({ success: false, message: "Order not found" }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, message: "Order deleted" });
+  } catch (error) {
+    return NextResponse.json({ success: false, message: "Failed to delete order" }, { status: 500 });
+  }
+}
+
+
+
 // GET /api/orders/[id] — accessible by admin OR user OR public via orderId
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {

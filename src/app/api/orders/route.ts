@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
 import { isAdminAuthenticated, getUserFromRequest } from "@/lib/auth";
+import "@/models/Product";
 
 // GET /api/orders - Fetch all orders (Admin only)
 export async function GET(req: NextRequest) {
