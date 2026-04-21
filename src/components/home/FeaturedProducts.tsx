@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { connectDB } from "@/lib/mongodb";
 import ProductModel from "@/models/Product";
-export const dynamic = "force-dynamic";
 
 async function getFeaturedProducts(): Promise<Product[]> {
   try {

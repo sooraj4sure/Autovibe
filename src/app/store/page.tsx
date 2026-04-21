@@ -5,6 +5,8 @@ import CategoriesSection from "@/components/home/CategoriesSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import BrandStatement from "@/components/home/BrandStatement";
+export const dynamic = "force-dynamic";
+
 
 export const metadata: Metadata = {
   title: "AutoVibe — Premium Car Accessories",
