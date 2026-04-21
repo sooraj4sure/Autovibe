@@ -817,19 +817,19 @@ const slides = [
   },
   {
     id: 2,
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=90",
+    image: "/hero/image4.pNG",
   },
   {
     id: 3,
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=90",
+    image: "/hero/image7.jpg",
   },
   {
     id: 4,
-    image: "/hero/image2.WEBp",
+    image: "/hero/image5.jpg",
   },
   {
     id: 5,
-    image: "/hero/image1.WEBP",
+    image: "/hero/image6.jpg",
   },
 ];
 
