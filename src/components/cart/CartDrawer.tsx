@@ -79,12 +79,12 @@ export default function CartDrawer() {
                       Your cart is empty
                     </p>
 
-                    {/* <p className="text-graphite-soft text-[11px] font-sans tracking-wider uppercase">
+                    <p className="text-graphite-soft text-[11px] font-sans tracking-wider uppercase">
                       Discover our collection
-                    </p> */}
-                    <p className="text-green-500 text-[11px] font-sans tracking-wider uppercase">
-                      View Orders In My Orders.
                     </p>
+                    {/* <p className="text-green-500 text-[11px] font-sans tracking-wider uppercase">
+                      View Orders In My Orders.
+                    </p> */}
                     <Button
                       variant="outline"
                       size="sm"
@@ -181,6 +181,9 @@ export default function CartDrawer() {
             </div>
 
             {/* Footer totals & CTA */}
+                            <p className="text-white text-[10px] font-sans tracking-widest uppercase text-center">
+                 * Free shipping on orders above ₹399 *
+                </p>
             {items.length > 0 && (
               <div className="border-t border-white/5 px-6 py-5 space-y-3">
                 <div className="space-y-1.5">
@@ -252,8 +255,8 @@ export default function CartDrawer() {
                   </Link>
                 </div>
 
-                <p className="text-graphite-soft text-[9px] font-sans tracking-widest uppercase text-center">
-                  Free shipping on orders above ₹500
+                <p className="text-yellow-500 text-[10px] font-sans tracking-widest uppercase text-center">
+                 Get Free Gift on orders above ₹999
                 </p>
               </div>
             )}
