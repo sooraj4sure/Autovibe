@@ -817,7 +817,7 @@ const slides = [
   },
   {
     id: 2,
-    image: "/hero/image4.pNG",
+    image: "/hero/image4.png",
   },
   {
     id: 3,
@@ -889,9 +889,9 @@ function ImageSlideshow() {
       className="relative"
       style={{
         width: "min(520px, 84vw)",
-        height: "min(420px, 100vw)",
+        height: "min(300px, 100vw)",
         maxWidth: 520,
-        maxHeight: 420,
+        maxHeight: 300,
       }}
       initial={{ opacity: 0, x: 32 }}
       animate={{ opacity: 1, x: 0 }}
