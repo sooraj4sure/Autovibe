@@ -40,7 +40,7 @@ const ProductSchema = new Schema<IProduct>(
     shortDescription: {
       type: String,
       required: [true, "Short description is required"],
-      maxlength: [300, "Short description cannot exceed 300 characters"],
+      maxlength: [1000, "Short description cannot exceed 300 characters"],
     },
     price: {
       type: Number,
